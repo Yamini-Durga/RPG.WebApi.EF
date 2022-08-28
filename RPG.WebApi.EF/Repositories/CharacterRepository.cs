@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using RPG.WebApi.EF.Data;
 using RPG.WebApi.EF.Dtos;
 using RPG.WebApi.EF.Interfaces;
 using RPG.WebApi.EF.Models;
@@ -8,21 +10,19 @@ namespace RPG.WebApi.EF.Repositories
     public class CharacterRepository : ICharacterRepository
     {
         private readonly IMapper _mapper;
-        private List<Character> characters = new List<Character>
-        {
-            new Character(),
-            new Character { Id = 1, Name = "Durga" }
-        };
-        public CharacterRepository(IMapper mapper)
+        private readonly DataContext _dbContext;
+        public CharacterRepository(IMapper mapper, DataContext dbContext)
         {
             _mapper = mapper;
+            _dbContext = dbContext;
         }
         public async Task<ServiceResponse<List<GetCharacterDto>>> AddCharacter(AddCharacterDto character)
         {
             Character newCharacter = _mapper.Map<Character>(character);
-            newCharacter.Id = characters.Count();
-            characters.Add(newCharacter);
+            _dbContext.Add(newCharacter);
+            await _dbContext.SaveChangesAsync();
             var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
+            var characters = await _dbContext.Characters.ToListAsync();
             serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
             return serviceResponse;
         }
@@ -32,10 +32,12 @@ namespace RPG.WebApi.EF.Repositories
             var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
             try
             {
-                Character deleteCharacter = characters.FirstOrDefault(c => c.Id == id);
+                Character deleteCharacter = await _dbContext.Characters.FirstOrDefaultAsync(c => c.Id == id);
                 if (deleteCharacter != null)
                 {
-                    characters.Remove(deleteCharacter);
+                    _dbContext.Characters.Remove(deleteCharacter);
+                    await _dbContext.SaveChangesAsync();
+                    var characters = _dbContext.Characters.ToList();
                     serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
                 }
             }
@@ -49,15 +51,15 @@ namespace RPG.WebApi.EF.Repositories
 
         public async Task<ServiceResponse<List<GetCharacterDto>>> GetAllCharacters()
         {
-            return new ServiceResponse<List<GetCharacterDto>> 
-            { 
-                Data = _mapper.Map<List<GetCharacterDto>>(characters)
-            };
+            var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
+            var characters = await _dbContext.Characters.ToListAsync();
+            serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
+            return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetCharacterDto>> GetCharacterById(int id)
         {
-            var character = characters.FirstOrDefault(c => c.Id == id);
+            var character = await _dbContext.Characters.FirstOrDefaultAsync(c => c.Id == id);
             var serviceResponse = new ServiceResponse<GetCharacterDto>();
             serviceResponse.Data = _mapper.Map<GetCharacterDto>(character);
             return serviceResponse;
@@ -68,10 +70,11 @@ namespace RPG.WebApi.EF.Repositories
             var serviceResponse = new ServiceResponse<GetCharacterDto>();
             try
             {
-                Character updateCharacter = characters.FirstOrDefault(c => c.Id == character.Id);
+                Character updateCharacter = await _dbContext.Characters.FirstOrDefaultAsync(c => c.Id == character.Id);
                 if(updateCharacter != null)
                 {
                     _mapper.Map(character, updateCharacter);
+                    await _dbContext.SaveChangesAsync();
                     serviceResponse.Data = _mapper.Map<GetCharacterDto>(updateCharacter);
                 }
             }
