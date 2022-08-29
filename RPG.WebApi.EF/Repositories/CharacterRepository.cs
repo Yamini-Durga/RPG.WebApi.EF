@@ -49,10 +49,10 @@ namespace RPG.WebApi.EF.Repositories
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<GetCharacterDto>>> GetAllCharacters()
+        public async Task<ServiceResponse<List<GetCharacterDto>>> GetAllCharacters(int userId)
         {
             var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
-            var characters = await _dbContext.Characters.ToListAsync();
+            var characters = await _dbContext.Characters.Where(u => u.User.Id == userId).ToListAsync();
             serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
             return serviceResponse;
         }

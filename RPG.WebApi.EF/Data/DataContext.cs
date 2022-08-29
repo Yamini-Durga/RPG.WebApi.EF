@@ -9,5 +9,6 @@ namespace RPG.WebApi.EF.Data
         {
         }
         public DbSet<Character> Characters { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

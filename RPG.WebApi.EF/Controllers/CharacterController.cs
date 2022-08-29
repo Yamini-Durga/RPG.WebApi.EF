@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RPG.WebApi.EF.Dtos;
 using RPG.WebApi.EF.Interfaces;
 using RPG.WebApi.EF.Models;
+using System.Security.Claims;
 
 namespace RPG.WebApi.EF.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CharacterController : ControllerBase
@@ -21,10 +24,12 @@ namespace RPG.WebApi.EF.Controllers
             var character = await _characterRepository.GetCharacterById(id);
             return Ok(character);
         }
+        //[AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> GetAll()
         {
-            return Ok(await _characterRepository.GetAllCharacters());
+            int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            return Ok(await _characterRepository.GetAllCharacters(userId));
         }
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> AddCharacter(AddCharacterDto character)
