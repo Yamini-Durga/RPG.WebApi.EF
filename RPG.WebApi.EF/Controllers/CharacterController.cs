@@ -29,7 +29,7 @@ namespace RPG.WebApi.EF.Controllers
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> GetAll()
         {
             int userId = int.Parse(User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value);
-            return Ok(await _characterRepository.GetAllCharacters(userId));
+            return Ok(await _characterRepository.GetAllCharacters());
         }
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> AddCharacter(AddCharacterDto character)
@@ -55,6 +55,11 @@ namespace RPG.WebApi.EF.Controllers
                 return NotFound(response);
             }
             return Ok(response);
+        }
+        [HttpPost("skill")]
+        public async Task<ActionResult<ServiceResponse<List<GetCharacterDto>>>> AddCharacterSkill(AddCharacterSkillDto characterSkill)
+        {
+            return Ok(await _characterRepository.AddCharacterSkill(characterSkill));
         }
     }
 }

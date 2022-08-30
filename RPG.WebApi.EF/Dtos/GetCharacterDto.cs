@@ -11,5 +11,7 @@ namespace RPG.WebApi.EF.Dtos
         public int Defense { get; set; } = 10;
         public int Intelligence { get; set; } = 10;
         public Rpg Class { get; set; } = Rpg.Knight;
+        public GetWeaponDto Weapon { get; set; }
+        public List<GetSkillDto> Skills { get; set; }
     }
 }
