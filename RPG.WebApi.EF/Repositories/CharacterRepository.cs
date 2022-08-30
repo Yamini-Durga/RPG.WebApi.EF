@@ -64,7 +64,11 @@ namespace RPG.WebApi.EF.Repositories
         public async Task<ServiceResponse<List<GetCharacterDto>>> GetAllCharacters()
         {
             var serviceResponse = new ServiceResponse<List<GetCharacterDto>>();
-            var characters = await _dbContext.Characters.Where(u => u.User.Id == GetUserId()).ToListAsync();
+            var characters = await _dbContext.Characters
+                .Where(u => u.User.Id == GetUserId())
+                .Include(c => c.Weapon)
+                .Include(c => c.Skills)
+                .ToListAsync();
             serviceResponse.Data = _mapper.Map<List<GetCharacterDto>>(characters);
             return serviceResponse;
         }
